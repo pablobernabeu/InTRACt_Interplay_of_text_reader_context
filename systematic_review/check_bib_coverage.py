@@ -4,11 +4,11 @@
 Every paper included in the systematic review should also appear in the
 preregistration's reference library, and each row of the verified extraction
 spreadsheet should carry the BibLaTeX citation key of its paper so the two
-artifacts can be cross-referenced.
+artefacts can be cross-referenced.
 
 This tool does both jobs from a single source of truth (the ``.bib`` file):
 
-* ``--check`` (default) verifies that every DOI in the spreadsheet is present in
+* With no flag (the default, used in CI), the script verifies that every DOI in the spreadsheet is present in
   the bibliography and that the spreadsheet's ``citation_key`` column matches the
   key the bibliography would assign by DOI. Exits non-zero (for CI) on any gap.
 * ``--write`` (re)derives the ``citation_key`` column from the bibliography by DOI
