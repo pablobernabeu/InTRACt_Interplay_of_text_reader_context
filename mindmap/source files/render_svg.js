@@ -1,10 +1,11 @@
-// Rasterise a standalone SVG to a high-DPI PNG using the Chromium bundled with
-// puppeteer (installed as a mermaid-cli dependency). No extra tooling required.
+// Render a standalone SVG to a high-DPI PNG or a vector PDF using the Chromium
+// bundled with puppeteer. No extra tooling required.
 //
-//   node render_svg.js <input.svg> <output.png> [scale]
+//   node render_svg.js <input.svg> <output.png|output.pdf> [scale]
 //
-// `scale` is the device pixel ratio (default 3) for a crisp raster suitable for
-// print. The PNG is cropped tightly to the SVG's own width/height.
+// PNG: `scale` is the device pixel ratio (default 3) for a crisp raster.
+// PDF: the page is sized exactly to the SVG and the text stays vector text,
+// so it remains selectable, searchable and indexable in the manuscript PDF.
 
 const fs = require('fs');
 const path = require('path');
@@ -13,7 +14,7 @@ const puppeteer = require('puppeteer');
 async function main() {
   const [, , inPath, outPath, scaleArg] = process.argv;
   if (!inPath || !outPath) {
-    console.error('usage: node render_svg.js <input.svg> <output.png> [scale]');
+    console.error('usage: node render_svg.js <input.svg> <output.png|output.pdf> [scale]');
     process.exit(1);
   }
   const scale = Number(scaleArg) || 3;
@@ -40,10 +41,21 @@ async function main() {
   const page = await browser.newPage();
   await page.setViewport({ width: w, height: h, deviceScaleFactor: scale });
   await page.setContent(html, { waitUntil: 'networkidle0' });
-  const el = await page.$('#wrap');
-  await el.screenshot({ path: outPath, omitBackground: false });
+  if (outPath.toLowerCase().endsWith('.pdf')) {
+    await page.pdf({
+      path: outPath,
+      width: `${w}px`,
+      height: `${h}px`,
+      printBackground: true,
+      pageRanges: '1',
+    });
+    console.log(`wrote ${outPath} (${w}x${h}, vector text)`);
+  } else {
+    const el = await page.$('#wrap');
+    await el.screenshot({ path: outPath, omitBackground: false });
+    console.log(`wrote ${outPath} (${w}x${h} @${scale}x)`);
+  }
   await browser.close();
-  console.log(`wrote ${outPath} (${w}x${h} @${scale}x)`);
 }
 
 main().catch(e => { console.error(e); process.exit(1); });

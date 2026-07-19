@@ -18,7 +18,8 @@ on:
       - 'preregistration/**'
       - '!preregistration/*.html'
       - '!preregistration/*.pdf'
-      - 'mindmap/mindmap.png'
+      - 'mindmap/mindmap.svg'
+      - 'mindmap/mindmap.pdf'
       - '.github/workflows/render-preregistration.yml'
   pull_request:
     branches: [main]
@@ -26,7 +27,8 @@ on:
       - 'preregistration/**'
       - '!preregistration/*.html'
       - '!preregistration/*.pdf'
-      - 'mindmap/mindmap.png'
+      - 'mindmap/mindmap.svg'
+      - 'mindmap/mindmap.pdf'
       - '.github/workflows/render-preregistration.yml'
   workflow_dispatch:
 

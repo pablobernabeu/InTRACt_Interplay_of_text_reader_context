@@ -1,0 +1,209 @@
+# InTRACt theory specification (theoryforge schema 1.0).
+# Machine-checkable statement of the theory tested in the Stage 1 Registered
+# Report (preregistration/preregistration.qmd). Figure 1 is generated from this
+# file by generate_theory_svg.py; edit HERE, then regenerate the figure.
+schema_version: "1.0"
+id: "intract-reading-2026"
+title: "InTRACt: text difficulty and reading experience in children's digital reading"
+maturity: "developing"
+theory_form: "variance"
+version:
+  id: "v2"
+  parent_id: "v1"
+  content_hash: null
+
+# Extension block (schema allows additional properties): the state-of-the-art
+# findings the theory builds on, one box per line of work, rendered as the top
+# band of Figure 1.
+background:
+  - id: b_lexical
+    statement: "Word frequency and predictability are benchmark predictors of reading times, with strikingly similar effects across languages"
+    sources: "Kuperman et al., 2024; Smith & Levy, 2013"
+  - id: b_syntax
+    statement: "Long syntactic dependencies tax working memory, and the load weighs most heavily on developing readers"
+    sources: "Gibson, 1998; Delage & Frauenfelder, 2019"
+  - id: b_coherence
+    statement: "Breaks in discourse coherence force bridging inferences that cost reading time"
+    sources: "Kintsch, 1988; McNamara et al., 1996"
+  - id: b_fluency
+    statement: "Reading practice builds fluency through automatisation and self-teaching"
+    sources: "LaBerge & Samuels, 1974; Share, 1995; Mol & Bus, 2011"
+
+constructs:
+  - id: c_lexdist
+    label: "Lexical-distributional difficulty"
+    display: "Lexical-distributional difficulty (LexDistPC)"
+    definition: "The degree to which a story's wording is infrequent, unpredictable in context, and lexically diverse, slowing lexical access."
+    measurement: ["LexDistPC: principal component over Zipf word frequency (reverse-scored), mean per-word surprisal, and lexical diversity (MTLD), computed per story"]
+    boundary_conditions: ["connected narrative text", "languages with validated frequency norms or trained language models"]
+  - id: c_syntax
+    label: "Syntactic-structural difficulty"
+    display: "Syntactic-structural difficulty (SyntaxPC)"
+    definition: "The degree to which a story's sentences impose structural memory load through long dependencies, embedding, and clause density."
+    measurement: ["SyntaxPC: principal component over mean dependency distance, subordination ratio, and clause count per sentence, from Universal Dependencies parses"]
+    boundary_conditions: ["languages with reliable automatic word segmentation and dependency parsing"]
+  - id: c_coherence
+    label: "Discourse coherence"
+    display: "Discourse coherence (CoherencePC)"
+    definition: "The degree to which successive ideas in a story are semantically and referentially connected, reducing the need for bridging inferences."
+    measurement: ["CoherencePC: principal component over sentence-to-sentence embedding similarity, argument overlap, and connective density"]
+    boundary_conditions: ["multi-sentence narrative text"]
+  - id: c_experience
+    label: "Within-child reading experience"
+    definition: "The amount of reading a child has accumulated in the app before the current story, an index of practice."
+    measurement: ["lagged log cumulative words read in prior sessions, person-mean-centred and scaled within child"]
+    boundary_conditions: ["children with at least five first-time story readings", "association interpreted within child, net of selective retention"]
+  - id: c_fluency
+    label: "Developing reading fluency"
+    definition: "The efficiency of word recognition and text-level processing, which grows as recognition becomes automatic and orthographic representations accumulate."
+    measurement: ["not directly observed; manifest in reading speed (see reading time per word)"]
+    boundary_conditions: ["developing readers aged 7 and older"]
+  - id: c_rt
+    label: "Reading time per word"
+    definition: "The story-level reading rate: total story reading time divided by word count, log-transformed; the study's sole outcome."
+    measurement: ["log(total story reading time / story word count), winsorised within language"]
+    boundary_conditions: ["first-time readings", "child-paced sessions (narration-pacing screen applied)"]
+  - id: c_language
+    label: "Language context"
+    display: "Language context (19 languages)"
+    definition: "The child's language and orthography, one of 19 in the corpus, conditioning average reading rate and potentially the size of text-feature effects."
+    measurement: ["language grouping factor: random intercepts and random text-feature slopes by language; orthographic depth examined exploratorily"]
+    boundary_conditions: ["19 languages of the Let's Story corpus"]
+
+propositions:
+  - id: p1
+    from: c_lexdist
+    to: c_rt
+    relation: "increases"
+    mechanism: "Infrequent, unpredictable and diverse wording slows lexical access and retrieval, which is not yet automatised in developing readers."
+    functional_form: "monotonic"
+  - id: p2
+    from: c_syntax
+    to: c_rt
+    relation: "increases"
+    mechanism: "Longer dependencies and denser embedding require information to be held across intervening material, taxing working memory during parsing."
+    functional_form: "monotonic"
+  - id: p3
+    from: c_coherence
+    to: c_rt
+    relation: "decreases"
+    mechanism: "Coherent text supplies the connections that would otherwise be built by time-costly bridging inferences."
+    functional_form: "monotonic"
+  - id: p4
+    from: c_experience
+    to: c_fluency
+    relation: "increases"
+    mechanism: "Practice automatises word recognition, and each successful decoding lays down orthographic representations that speed subsequent recognition (self-teaching)."
+    functional_form: "logarithmic (diminishing returns)"
+  - id: p5
+    from: c_fluency
+    to: c_rt
+    relation: "decreases"
+    mechanism: "Automatic recognition demands less attention and proceeds faster, freeing capacity for text-level processing."
+    functional_form: "monotonic"
+  - id: p6
+    from: c_language
+    to: c_rt
+    relation: "moderates"
+    mechanism: "Orthographic depth and language-specific reading conventions condition average reading rate and may modulate the size of the text-feature effects (P1 to P3)."
+    functional_form: "group-level variation"
+
+boundary_conditions:
+  - "children aged 7 years and older reading self-paced digital stories"
+  - "AI-generated narratives of 200 to 400 words, read for the first time"
+  - "19 languages; inferences about reading behaviour, not comprehension"
+
+predictions:
+  - id: pred_h1a
+    derives_from: [p2]
+    statement: "Stories higher in syntactic-structural difficulty are read more slowly: the standardised SyntaxPC coefficient on log reading time per word is positive and practically meaningful (95% HDI above the +0.05 ROPE bound)."
+    type: "directional"
+    risk_score: 0.6
+    severity: 0.6
+    diagnostic_vs: [alt_narration]
+    test_label: "Hypothesis 1a - confirmatory model, HDI+ROPE"
+    display: "Stories higher in syntactic-structural difficulty are read more slowly: b(SyntaxPC) > 0, beyond the ROPE."
+  - id: pred_h1b
+    derives_from: [p1]
+    statement: "Stories higher in lexical-distributional difficulty are read more slowly: the standardised LexDistPC coefficient is positive and practically meaningful (95% HDI above the +0.05 ROPE bound)."
+    type: "directional"
+    risk_score: 0.5
+    severity: 0.6
+    diagnostic_vs: [alt_narration]
+    test_label: "Hypothesis 1b - confirmatory model, HDI+ROPE"
+    display: "Stories higher in lexical-distributional difficulty are read more slowly: b(LexDistPC) > 0, beyond the ROPE."
+  - id: pred_h1c
+    derives_from: [p3]
+    statement: "More coherent stories are read faster: the standardised CoherencePC coefficient is negative and practically meaningful (95% HDI below the -0.05 ROPE bound)."
+    type: "directional"
+    risk_score: 0.7
+    severity: 0.7
+    diagnostic_vs: [alt_narration]
+    test_label: "Hypothesis 1c - confirmatory model, HDI+ROPE"
+    display: "More coherent stories are read faster: b(CoherencePC) < 0, beyond the ROPE."
+  - id: pred_h2
+    derives_from: [p4, p5]
+    statement: "Reading time per word declines as within-child reading experience accumulates: the standardised experience coefficient is negative and practically meaningful (95% HDI below the -0.05 ROPE bound), estimated purely within child."
+    type: "directional"
+    risk_score: 0.6
+    severity: 0.7
+    diagnostic_vs: [alt_skimming, alt_retention]
+    test_label: "Hypothesis 2 - confirmatory model + engagement check"
+    display: "Reading speeds up within child as reading experience accumulates: b(Experience) < 0, beyond the ROPE."
+
+auxiliary_assumptions:
+  - id: aux_pacing
+    statement: "Recorded reading times are child-paced for the bulk of sessions; narration-paced sessions are identified by the pre-registered pacing screen and excluded in sensitivity analysis."
+    added_for: null
+    protects: [pred_h1a, pred_h1b, pred_h1c]
+  - id: aux_reader
+    statement: "One reader per account for most sessions; shared use adds outcome noise that the very large sample attenuates."
+    added_for: null
+    protects: [pred_h2]
+  - id: aux_components
+    statement: "The pooled PCA recovers the three text-feature families; component matching is algorithmic against pre-specified marker variables."
+    added_for: null
+    protects: [pred_h1a, pred_h1b, pred_h1c]
+
+evidence:
+  - supports: pred_h1b
+    source_doi: "10.1016/j.jml.2023.104497"
+    direction: "corroborates"
+  - supports: pred_h1b
+    source_doi: "10.1016/j.visres.2015.05.008"
+    direction: "corroborates"
+  - supports: pred_h2
+    source_doi: "10.3389/feduc.2024.1286132"
+    direction: "corroborates"
+  - supports: pred_h2
+    source_doi: "10.1111/1467-9817.12289"
+    direction: "corroborates"
+
+alternatives:
+  - id: alt_narration
+    label: "Narration pacing"
+    key_constructs: ["text-to-speech pacing", "listening time"]
+    source_doi: null
+  - id: alt_skimming
+    label: "Skimming / disengagement"
+    key_constructs: ["declining engagement", "novelty wearing off"]
+    source_doi: null
+  - id: alt_retention
+    label: "Selective retention"
+    key_constructs: ["self-selected continued app use"]
+    source_doi: null
+
+formal_model:
+  type: "sem"
+  spec_ref: "log RT/word ~ LexDistPC + SyntaxPC + CoherencePC + Experience + (1 + PCs + Experience | Child) + (1 + PCs | Language); Bayesian estimation, HDI+ROPE decision rule"
+
+provenance:
+  - step: "1"
+    action: "tf_construct"
+    detail: "Registered the seven constructs: the three text-feature families, within-child reading experience, developing fluency, reading time per word, and the language context."
+  - step: "2"
+    action: "tf_proposition"
+    detail: "Linked the text-feature families to reading time (P1 to P3), experience to fluency to reading time (P4, P5), and language context as a moderating grouping (P6)."
+  - step: "3"
+    action: "tf_predict"
+    detail: "Derived the four pre-registered predictions H1a, H1b, H1c and H2, pointing them diagnostically at the narration-pacing, skimming and selective-retention alternatives."
