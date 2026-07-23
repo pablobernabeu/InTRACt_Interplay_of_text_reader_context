@@ -7,6 +7,13 @@ separate working repository; only the final verified spreadsheet and the small s
 that keeps it consistent with the bibliography are mirrored here. Paper PDFs are not
 redistributed.
 
+The included papers were identified by a Google Scholar search across the review's
+query strands, complemented in July 2026 by a reproducible Scopus search built with
+[scopusflow](https://pablobernabeu.github.io/scopusflow/), which turns a query into an
+inspectable plan and retrieves records with quota handling and a stable tidy schema
+([doi:10.5281/zenodo.21252669](https://doi.org/10.5281/zenodo.21252669)). Every DOI in
+the table is verified against Crossref, with DataCite as a fallback.
+
 ## Files
 
 - **`verified_extraction.csv`** — one row per included paper. Bibliographic fields
