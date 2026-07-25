@@ -7,9 +7,8 @@ theory diagram deterministically, and writes ../mindmap.svg. Rasterise with
 
 The layout runs from top to bottom: the established findings the theory builds
 on, the constructs and labelled propositions, the pre-registered predictions,
-the alternative accounts the analyses weigh against, and the unmeasured account
-that bounds interpretation without being tested. Box heights are computed from
-wrapped text, so content never overlaps and inner margins stay equal.
+and the alternative accounts the analyses weigh against. Box heights are computed
+from wrapped text, so content never overlaps and inner margins stay equal.
 """
 import sys
 
@@ -305,9 +304,9 @@ def main() -> None:
     y += band3_h + 14
 
     # ---------------- band 4: alternative accounts ---------------------------
-    # Two strips. An alternative that a prediction is pointed at is weighed by
-    # the confirmatory analyses; one that no prediction can bear on only bounds
-    # the interpretation, and is drawn dashed and captioned as such.
+    # An alternative that a prediction is pointed at is weighed by the confirmatory
+    # analyses. Should the specification ever carry one that no prediction bears on,
+    # it is drawn below in a dashed strip captioned as bounding the interpretation.
     def alt_strip(top, label, items, dash=None):
         strip_h = 44
         svg.rect(M, top, W - 2 * M, strip_h, "#ffffff", ALT_BORDER, rx=10,

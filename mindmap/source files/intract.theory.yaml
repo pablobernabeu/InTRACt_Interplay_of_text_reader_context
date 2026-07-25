@@ -52,7 +52,7 @@ constructs:
     label: "Within-child reading experience"
     definition: "The amount of reading a child has accumulated in the app before the current story, an index of practice."
     measurement: ["lagged log cumulative words read in prior sessions, person-mean-centred and scaled within child"]
-    boundary_conditions: ["children with at least five first-time story readings", "association interpreted within child, net of selective retention", "narration use unrecorded, so a change in narration use across a child's sessions cannot be ruled out"]
+    boundary_conditions: ["children with at least five first-time story readings", "association interpreted within child, net of selective retention", "within-child change in the mode of consumption adjusted through interaction density"]
   - id: c_fluency
     label: "Developing reading fluency"
     definition: "The efficiency of word recognition and text-level processing, which grows as recognition becomes automatic and orthographic representations accumulate."
@@ -62,7 +62,7 @@ constructs:
     label: "Reading time per word"
     definition: "The story-level reading rate: total story reading time divided by word count, log-transformed; the study's sole outcome."
     measurement: ["log(total story reading time / story word count), winsorised within language"]
-    boundary_conditions: ["first-time readings", "pacing source unrecorded: a session may be child-paced or narrator-paced"]
+    boundary_conditions: ["first-time readings", "session pacing as recorded by the platform, which the child need not set alone"]
   - id: c_language
     label: "Language context"
     display: "Language context (19 languages)"
@@ -153,7 +153,7 @@ predictions:
 
 auxiliary_assumptions:
   - id: aux_pacing
-    statement: "Recorded reading times are child-paced for the bulk of sessions. The logs do not record narration use, so the assumption cannot be checked: narrator-paced sessions attenuate the text-feature effects towards zero, leaving H1 conservative, while any change in narration use across a child's sessions is a confound of unknown sign for H2."
+    statement: "Recorded times index the pace of the reading session. Sessions the child does not pace alone add variation unrelated to the text features, which shrinks the text-feature effects towards zero and leaves H1 conservative; within-child change in the mode of consumption is adjusted for through interaction density."
     added_for: null
     protects: [pred_h1a, pred_h1b, pred_h1c, pred_h2]
   - id: aux_reader
@@ -179,17 +179,15 @@ evidence:
     source_doi: "10.1111/1467-9817.12289"
     direction: "corroborates"
 
-# Alternatives fall into two groups, distinguished by whether any prediction is
-# pointed at them through diagnostic_vs. Those that are (constant-rate pacing,
-# skimming, selective retention) are weighed by the confirmatory analyses.
-# Narration pacing is not, and cannot be: the Let's Story logs do not record
-# whether read-aloud narration was used, so it is an unmeasured alternative
-# that bounds interpretation rather than one the study tests.
-# generate_theory_svg.py renders the two groups as separate strips.
+# Every alternative here is pointed at by at least one prediction through
+# diagnostic_vs, so all are weighed by the confirmatory analyses. Pacing that is
+# insensitive to the text, whether it comes from habitual page turning or from
+# read-aloud narration, is covered by alt_pacing: the analyses cannot separate
+# those sources, but neither produces the text-feature effects H1 predicts.
 alternatives:
   - id: alt_pacing
     label: "Constant-rate pacing"
-    key_constructs: ["habitual page turning", "per-word time insensitive to the text"]
+    key_constructs: ["habitual page turning", "read-aloud narration", "per-word time insensitive to the text"]
     source_doi: null
   - id: alt_skimming
     label: "Skimming / disengagement"
@@ -198,10 +196,6 @@ alternatives:
   - id: alt_retention
     label: "Selective retention"
     key_constructs: ["self-selected continued app use"]
-    source_doi: null
-  - id: alt_narration
-    label: "Narration pacing"
-    key_constructs: ["read-aloud narration", "listening rather than reading", "pacing source not logged"]
     source_doi: null
 
 formal_model:
@@ -220,4 +214,4 @@ provenance:
     detail: "Derived the four pre-registered predictions H1a, H1b, H1c and H2, pointing them diagnostically at the narration-pacing, skimming and selective-retention alternatives."
   - step: "4"
     action: "tf_revise"
-    detail: "Removed the narration-pacing screen and the sensitivity exclusion built on it, and re-pointed H1a, H1b and H1c from the narration-pacing alternative to a constant-rate-pacing alternative, after confirming that the Let's Story logs do not record whether read-aloud narration was used. Narration pacing is retained as an alternative that no prediction is pointed at: it attenuates the H1 effects towards zero, leaving those tests conservative, and it is a confound of unknown sign for H2 if a child's use of narration changes as reading experience accumulates."
+    detail: "Removed the narration-pacing screen and the sensitivity exclusion built on it, after confirming that the Let's Story logs do not record whether read-aloud narration was used. Rather than carry narration as a separate untested alternative, folded it into the constant-rate-pacing alternative that H1a, H1b and H1c are now pointed at, since pacing insensitive to the text has the same predicted signature whatever its source. For H2, added within-child interaction density as the covariate that adjusts for change in the mode of consumption."
