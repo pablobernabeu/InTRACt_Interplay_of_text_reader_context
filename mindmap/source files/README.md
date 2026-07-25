@@ -5,7 +5,7 @@ specification rather than drawn by hand. The single source of truth is
 `intract.theory.yaml`, a [theoryforge](https://github.com/pablobernabeu/theoryforge)
 specification of the InTRACt theory: its constructs, the labelled propositions
 P1–P6, the pre-registered predictions, the alternative accounts, and the
-state-of-the-art findings rendered as the figure's top band.
+established findings rendered as the figure's top band.
 
 `generate_theory_svg.py` validates the specification with the theoryforge
 package and lays out the banded diagram deterministically, writing

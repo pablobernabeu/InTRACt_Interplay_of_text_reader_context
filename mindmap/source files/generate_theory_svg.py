@@ -5,11 +5,11 @@ theory diagram deterministically, and writes ../mindmap.svg. Rasterise with
 `npm run render` (render_svg.js), which writes ../mindmap.png (raster) and
 ../mindmap.pdf (vector).
 
-The layout has four bands, from top to bottom: the state-of-the-art findings
-the theory builds on, the constructs and labelled propositions, the
-pre-registered predictions and the alternative accounts put to the same tests. Box heights
-are computed from wrapped text, so content never overlaps and inner margins
-stay equal.
+The layout runs from top to bottom: the established findings the theory builds
+on, the constructs and labelled propositions, the pre-registered predictions,
+the alternative accounts the analyses weigh against, and the unmeasured account
+that bounds interpretation without being tested. Box heights are computed from
+wrapped text, so content never overlaps and inner margins stay equal.
 """
 import sys
 
@@ -36,12 +36,15 @@ TELLS = "#8a6d1a"
 ALT_BORDER = "#c9302c"
 ALT_LABEL = "#7a1f1c"
 
-W = 1060          # canvas width
+W = 950           # canvas width (narrow: the figure is placed at text width, so a
+                  # narrower canvas renders every glyph larger on the page; 950 is
+                  # the narrowest width that still leaves room on the page for the
+                  # APA number line, title line and note alongside the figure)
 M = 14            # outer margin
 PAD = 12          # inner padding of boxes
-GAP = 14          # gap between sibling boxes
-FS = 11.5         # base font size
-LH = 15           # line height
+GAP = 13          # gap between sibling boxes
+FS = 13           # base font size
+LH = 16.5         # line height
 CW = 0.52         # average character width as a fraction of font size
 
 
@@ -96,14 +99,15 @@ class SVG:
             f'stroke="{ARROW}" stroke-width="1.4" marker-end="url(#arr)"{d}/>')
         if label:
             mx, my = (x1 + x2) / 2, (y1 + y2) / 2
-            self.text(mx, my + label_dy, label, fs=10.5, fill=ARROW, style="italic",
+            self.text(mx, my + label_dy, label, fs=12, fill=ARROW, style="italic",
                       anchor="middle")
 
     def elbow(self, x1, y1, x2, y2, midx, label=None, dash=None):
         """Horizontal, then vertical, then horizontal arrow through a given elbow x.
 
-        The label sits just after the source, above the first horizontal segment,
-        so labels of parallel edges never collide.
+        The label sits just after the source, on the side of the first horizontal
+        segment that the elbow turns away from, so the vertical segment cannot
+        strike through it however long the relation word is.
         """
         d = f' stroke-dasharray="{dash}"' if dash else ""
         self.parts.append(
@@ -111,7 +115,8 @@ class SVG:
             f'L {x2:.1f} {y2:.1f}" fill="none" stroke="{ARROW}" stroke-width="1.4" '
             f'marker-end="url(#arr)"{d}/>')
         if label:
-            self.text(x1 + 10, y1 - 6, label, fs=10.5, fill=ARROW, style="italic")
+            self.text(x1 + 10, y1 + (14 if y2 < y1 else -6), label, fs=12,
+                      fill=ARROW, style="italic")
 
     def elbow_up(self, x1, y1, x2, y2, label=None, dash=None):
         """Horizontal from the source, then vertical up into the target's bottom edge."""
@@ -121,7 +126,7 @@ class SVG:
             f'fill="none" stroke="{ARROW}" stroke-width="1.4" '
             f'marker-end="url(#arr)"{d}/>')
         if label:
-            self.text(x1 + 10, y1 - 6, label, fs=10.5, fill=ARROW, style="italic")
+            self.text(x1 + 10, y1 - 6, label, fs=12, fill=ARROW, style="italic")
 
 
 def main() -> None:
@@ -130,37 +135,37 @@ def main() -> None:
     svg = SVG()
     y = float(M)  # running vertical cursor; tight top margin (no blank space)
 
-    # ---------------- band 1: builds on the state of the art ----------------
+    # ---------------- band 1: established findings the theory builds on -----
     bg = T["background"]
     n = len(bg)
     bw = (W - 2 * M - 2 * PAD - (n - 1) * GAP) / n
     blocks = []
     maxh = 0.0
     for b in bg:
-        st = wrap(b["statement"], bw - 2 * PAD, 11)
-        so = wrap(f"({b['sources']})", bw - 2 * PAD, 10)
-        h = PAD + len(st) * 14 + 6 + len(so) * 13 + PAD - 4
+        st = wrap(b["statement"], bw - 2 * PAD, 12.5)
+        so = wrap(f"({b['sources']})", bw - 2 * PAD, 11.5)
+        h = PAD + len(st) * 16 + 6 + len(so) * 14.5 + PAD - 4
         blocks.append((st, so, h))
         maxh = max(maxh, h)
     band1_h = 26 + PAD + maxh + PAD
     svg.rect(M, y, W - 2 * M, band1_h, BAND_BG, BAND_BORDER, rx=6)
-    svg.text(M + PAD, y + 18, "Builds on the state of the art", fs=11.5,
-             fill=BAND_LABEL, weight="bold")
+    svg.text(M + PAD, y + 18, "Established findings the theory builds on",
+             fs=13, fill=BAND_LABEL, weight="bold")
     by = y + 26 + PAD
     for i, (st, so, h) in enumerate(blocks):
         bx = M + PAD + i * (bw + GAP)
         svg.rect(bx, by, bw, maxh, LIT_FILL, LIT_BORDER, rx=6)
         # centre the content vertically so leftover height splits evenly
-        content_h = len(st) * 14 + 6 + len(so) * 13
-        ty0 = by + (maxh - content_h) / 2 + 9
-        ty = svg.lines(bx + PAD, ty0, st, fs=11, lh=14)
-        svg.lines(bx + PAD, ty + 6, so, fs=10, fill=CITE, style="italic", lh=13)
+        content_h = len(st) * 16 + 6 + len(so) * 14.5
+        ty0 = by + (maxh - content_h) / 2 + 10
+        ty = svg.lines(bx + PAD, ty0, st, fs=12.5, lh=16)
+        svg.lines(bx + PAD, ty + 6, so, fs=11.5, fill=CITE, style="italic", lh=14.5)
     y += band1_h
 
     # connector
     cx = W / 2
     svg.arrow(cx, y + 4, cx, y + 34)
-    svg.text(cx + 8, y + 22, "builds on", fs=10.5, fill=BAND_LABEL, style="italic")
+    svg.text(cx + 8, y + 22, "motivates", fs=12, fill=BAND_LABEL, style="italic")
     y += 40
 
     # ---------------- band 2: constructs and propositions -------------------
@@ -192,7 +197,7 @@ def main() -> None:
 
     def dim_tag(x, yy, label):
         svg.parts.append(
-            f'<text x="{x:.1f}" y="{yy:.1f}" font-size="10" fill="{ARROW}" '
+            f'<text x="{x:.1f}" y="{yy:.1f}" font-size="11.5" fill="{ARROW}" '
             f'font-weight="bold" letter-spacing="2.2" opacity="0.75">{esc(label)}</text>')
 
     # left column: experience aligned with fluency (its target); language below
@@ -204,14 +209,14 @@ def main() -> None:
 
     # outcome: right, just tall enough for the four incoming arrows to fan clearly
     out_x = W - M - PAD - out_w - 12
-    h_out = max(box_h("c_rt", out_w), 88)
+    h_out = max(box_h("c_rt", out_w), 120)
     out_y = (inner_top + mid_bottom) / 2 - h_out / 2
 
     band2_bottom = max(mid_bottom, lang_y + h_lang, out_y + h_out) + PAD + 10
     band2_h = band2_bottom - band2_top
     svg.rect(M, band2_top, W - 2 * M, band2_h, BAND_BG, BAND_BORDER, rx=6)
     svg.text(M + PAD, band2_top + 18, "The theory: constructs and labelled propositions",
-             fs=11.5, fill=BAND_LABEL, weight="bold")
+             fs=13, fill=BAND_LABEL, weight="bold")
 
     def draw_construct(cid, x, yy, w, h, dark=False):
         svg.rect(x, yy, w, h, BOX_FILL_DARK if dark else BOX_FILL_LIGHT, BOX_BORDER,
@@ -256,7 +261,7 @@ def main() -> None:
 
     # connector
     svg.arrow(cx, y + 4, cx, y + 34)
-    svg.text(cx + 8, y + 22, "entails", fs=10.5, fill=BAND_LABEL, style="italic")
+    svg.text(cx + 8, y + 22, "entails", fs=12, fill=BAND_LABEL, style="italic")
     y += 40
 
     # ---------------- band 3: predictions -----------------------------------
@@ -270,48 +275,63 @@ def main() -> None:
         pid = p["test_label"].split(" - ")[0]
         tag = p["test_label"].split(" - ", 1)[1].strip()
         tag = tag[0].upper() + tag[1:]
-        body = wrap(p.get("display", p["statement"]), pw - 2 * PAD, 10.5)
-        tells = "tells against " + " and ".join(alts[a].lower() for a in p["diagnostic_vs"])
-        tl = wrap(tells, pw - 2 * PAD, 10)
-        tg = wrap(tag, pw - 2 * PAD, 10)
-        h = PAD + 16 + len(body) * 14 + 6 + len(tl) * 13 + 6 + len(tg) * 13 + PAD - 2
+        body = wrap(p.get("display", p["statement"]), pw - 2 * PAD, 12)
+        tells = "weighed against " + " and ".join(alts[a].lower() for a in p["diagnostic_vs"])
+        tl = wrap(tells, pw - 2 * PAD, 11.5)
+        tg = wrap(tag, pw - 2 * PAD, 11.5)
+        h = PAD + 18 + len(body) * 15.5 + 6 + len(tl) * 14.5 + 6 + len(tg) * 14.5 + PAD - 2
         cards.append((pid, body, tl, tg, h))
         maxh = max(maxh, h)
     band3_h = 26 + PAD + maxh + PAD
     svg.rect(M, y, W - 2 * M, band3_h, BAND_BG, BAND_BORDER, rx=6)
     svg.text(M + PAD, y + 18,
              "Predictions, each pre-registered and tested in the confirmatory analysis",
-             fs=11.5, fill=BAND_LABEL, weight="bold")
+             fs=13, fill=BAND_LABEL, weight="bold")
     py = y + 26 + PAD
     for i, (pid, body, tl, tg, h) in enumerate(cards):
         px = M + PAD + i * (pw + GAP)
         svg.rect(px, py, pw, maxh, PRED_FILL, PRED_BORDER, rx=6)
-        svg.text(px + PAD, py + PAD + 6, pid, fs=12, fill=PRED_ID, weight="bold")
+        svg.text(px + PAD, py + PAD + 7, pid, fs=13.5, fill=PRED_ID, weight="bold")
         # centre the body + tells-against block between the header and the tag,
         # so leftover height splits evenly rather than pooling in the middle
-        block_h = len(body) * 14 + 4 + len(tl) * 13
-        avail_top = py + PAD + 18
-        avail_bottom = py + maxh - PAD - len(tg) * 13 - 4
-        ty0 = avail_top + max(0.0, (avail_bottom - avail_top - block_h) / 2) + 8
-        ty = svg.lines(px + PAD, ty0, body, fs=10.5, lh=14)
-        ty = svg.lines(px + PAD, ty + 4, tl, fs=10, fill=TELLS, style="italic", lh=13)
-        svg.lines(px + pw - PAD, py + maxh - PAD - (len(tg) - 1) * 13 - 2, tg,
-                  fs=10, weight="bold", anchor="end", lh=13)
+        block_h = len(body) * 15.5 + 4 + len(tl) * 14.5
+        avail_top = py + PAD + 20
+        avail_bottom = py + maxh - PAD - len(tg) * 14.5 - 4
+        ty0 = avail_top + max(0.0, (avail_bottom - avail_top - block_h) / 2) + 9
+        ty = svg.lines(px + PAD, ty0, body, fs=12, lh=15.5)
+        ty = svg.lines(px + PAD, ty + 4, tl, fs=11.5, fill=TELLS, style="italic", lh=14.5)
+        svg.lines(px + pw - PAD, py + maxh - PAD - (len(tg) - 1) * 14.5 - 2, tg,
+                  fs=11.5, weight="bold", anchor="end", lh=14.5)
     y += band3_h + 14
 
-    # ---------------- band 4: alternatives strip -----------------------------
-    strip_h = 40
-    svg.rect(M, y, W - 2 * M, strip_h, "#ffffff", ALT_BORDER, rx=10, sw=1.2)
-    label = "Alternative accounts, put to the same tests:"
-    svg.text(M + PAD + 6, y + 25, label, fs=11.5, fill=ALT_LABEL, weight="bold")
-    px = M + PAD + 6 + len(label) * 11.5 * CW + 24
-    for a in T["alternatives"]:
-        t = a["label"]
-        wpix = len(t) * 10.5 * CW + 26
-        svg.rect(px, y + 8, wpix, 24, "#ffffff", ALT_BORDER, rx=12, sw=1.1)
-        svg.text(px + wpix / 2, y + 24, t, fs=10.5, anchor="middle")
-        px += wpix + 14
-    y += strip_h + M
+    # ---------------- band 4: alternative accounts ---------------------------
+    # Two strips. An alternative that a prediction is pointed at is weighed by
+    # the confirmatory analyses; one that no prediction can bear on only bounds
+    # the interpretation, and is drawn dashed and captioned as such.
+    def alt_strip(top, label, items, dash=None):
+        strip_h = 44
+        svg.rect(M, top, W - 2 * M, strip_h, "#ffffff", ALT_BORDER, rx=10,
+                 sw=1.2, dash=dash)
+        svg.text(M + PAD + 6, top + 27, label, fs=13, fill=ALT_LABEL,
+                 weight="bold")
+        px = M + PAD + 6 + len(label) * 13 * CW + 24
+        for a in items:
+            t = a["label"]
+            wpix = len(t) * 12 * CW + 26
+            svg.rect(px, top + 9, wpix, 26, "#ffffff", ALT_BORDER, rx=13,
+                     sw=1.1, dash=dash)
+            svg.text(px + wpix / 2, top + 27, t, fs=12, anchor="middle")
+            px += wpix + 14
+        return top + strip_h
+
+    targeted = {a for p in preds for a in p.get("diagnostic_vs", [])}
+    y = alt_strip(y, "Alternative accounts weighed by the same tests:",
+                  [a for a in T["alternatives"] if a["id"] in targeted])
+    untested = [a for a in T["alternatives"] if a["id"] not in targeted]
+    if untested:
+        y = alt_strip(y + 10, "Unmeasured account, bounds interpretation:",
+                      untested, dash="5,4")
+    y += M
 
     height = y
     # Single-line output: the manuscript's HTML build inlines this file as raw

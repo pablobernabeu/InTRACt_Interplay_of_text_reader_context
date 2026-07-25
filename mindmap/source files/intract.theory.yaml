@@ -8,16 +8,16 @@ title: "InTRACt: text difficulty and reading experience in children's digital re
 maturity: "developing"
 theory_form: "variance"
 version:
-  id: "v2"
-  parent_id: "v1"
+  id: "v3"
+  parent_id: "v2"
   content_hash: null
 
-# Extension block (schema allows additional properties): the state-of-the-art
+# Extension block (schema allows additional properties): the established
 # findings the theory builds on, one box per line of work, rendered as the top
 # band of Figure 1.
 background:
   - id: b_lexical
-    statement: "Word frequency and predictability are benchmark predictors of reading times, with strikingly similar effects across languages"
+    statement: "Word frequency and predictability are benchmark predictors of reading times, with similar effects across languages"
     sources: "Kuperman et al., 2024; Smith & Levy, 2013"
   - id: b_syntax
     statement: "Long syntactic dependencies tax working memory, and the load weighs most heavily on developing readers"
@@ -52,7 +52,7 @@ constructs:
     label: "Within-child reading experience"
     definition: "The amount of reading a child has accumulated in the app before the current story, an index of practice."
     measurement: ["lagged log cumulative words read in prior sessions, person-mean-centred and scaled within child"]
-    boundary_conditions: ["children with at least five first-time story readings", "association interpreted within child, net of selective retention"]
+    boundary_conditions: ["children with at least five first-time story readings", "association interpreted within child, net of selective retention", "narration use unrecorded, so a change in narration use across a child's sessions cannot be ruled out"]
   - id: c_fluency
     label: "Developing reading fluency"
     definition: "The efficiency of word recognition and text-level processing, which grows as recognition becomes automatic and orthographic representations accumulate."
@@ -62,7 +62,7 @@ constructs:
     label: "Reading time per word"
     definition: "The story-level reading rate: total story reading time divided by word count, log-transformed; the study's sole outcome."
     measurement: ["log(total story reading time / story word count), winsorised within language"]
-    boundary_conditions: ["first-time readings", "child-paced sessions (narration-pacing screen applied)"]
+    boundary_conditions: ["first-time readings", "pacing source unrecorded: a session may be child-paced or narrator-paced"]
   - id: c_language
     label: "Language context"
     display: "Language context (19 languages)"
@@ -117,34 +117,34 @@ predictions:
   - id: pred_h1a
     derives_from: [p2]
     statement: "Stories higher in syntactic-structural difficulty are read more slowly: the standardised SyntaxPC coefficient on log reading time per word is positive and practically meaningful (95% HDI above the +0.05 ROPE bound)."
-    type: "directional"
+    type: "interval"
     risk_score: 0.6
     severity: 0.6
-    diagnostic_vs: [alt_narration]
+    diagnostic_vs: [alt_pacing]
     test_label: "Hypothesis 1a - confirmatory model, HDI+ROPE"
     display: "Stories higher in syntactic-structural difficulty are read more slowly: b(SyntaxPC) > 0, beyond the ROPE."
   - id: pred_h1b
     derives_from: [p1]
     statement: "Stories higher in lexical-distributional difficulty are read more slowly: the standardised LexDistPC coefficient is positive and practically meaningful (95% HDI above the +0.05 ROPE bound)."
-    type: "directional"
+    type: "interval"
     risk_score: 0.5
     severity: 0.6
-    diagnostic_vs: [alt_narration]
+    diagnostic_vs: [alt_pacing]
     test_label: "Hypothesis 1b - confirmatory model, HDI+ROPE"
     display: "Stories higher in lexical-distributional difficulty are read more slowly: b(LexDistPC) > 0, beyond the ROPE."
   - id: pred_h1c
     derives_from: [p3]
     statement: "More coherent stories are read faster: the standardised CoherencePC coefficient is negative and practically meaningful (95% HDI below the -0.05 ROPE bound)."
-    type: "directional"
+    type: "interval"
     risk_score: 0.7
     severity: 0.7
-    diagnostic_vs: [alt_narration]
+    diagnostic_vs: [alt_pacing]
     test_label: "Hypothesis 1c - confirmatory model, HDI+ROPE"
     display: "More coherent stories are read faster: b(CoherencePC) < 0, beyond the ROPE."
   - id: pred_h2
     derives_from: [p4, p5]
     statement: "Reading time per word declines as within-child reading experience accumulates: the standardised experience coefficient is negative and practically meaningful (95% HDI below the -0.05 ROPE bound), estimated purely within child."
-    type: "directional"
+    type: "interval"
     risk_score: 0.6
     severity: 0.7
     diagnostic_vs: [alt_skimming, alt_retention]
@@ -153,9 +153,9 @@ predictions:
 
 auxiliary_assumptions:
   - id: aux_pacing
-    statement: "Recorded reading times are child-paced for the bulk of sessions; narration-paced sessions are identified by the pre-registered pacing screen and excluded in sensitivity analysis."
+    statement: "Recorded reading times are child-paced for the bulk of sessions. The logs do not record narration use, so the assumption cannot be checked: narrator-paced sessions attenuate the text-feature effects towards zero, leaving H1 conservative, while any change in narration use across a child's sessions is a confound of unknown sign for H2."
     added_for: null
-    protects: [pred_h1a, pred_h1b, pred_h1c]
+    protects: [pred_h1a, pred_h1b, pred_h1c, pred_h2]
   - id: aux_reader
     statement: "One reader per account for most sessions; shared use adds outcome noise that the very large sample attenuates."
     added_for: null
@@ -179,10 +179,17 @@ evidence:
     source_doi: "10.1111/1467-9817.12289"
     direction: "corroborates"
 
+# Alternatives fall into two groups, distinguished by whether any prediction is
+# pointed at them through diagnostic_vs. Those that are (constant-rate pacing,
+# skimming, selective retention) are weighed by the confirmatory analyses.
+# Narration pacing is not, and cannot be: the Let's Story logs do not record
+# whether read-aloud narration was used, so it is an unmeasured alternative
+# that bounds interpretation rather than one the study tests.
+# generate_theory_svg.py renders the two groups as separate strips.
 alternatives:
-  - id: alt_narration
-    label: "Narration pacing"
-    key_constructs: ["text-to-speech pacing", "listening time"]
+  - id: alt_pacing
+    label: "Constant-rate pacing"
+    key_constructs: ["habitual page turning", "per-word time insensitive to the text"]
     source_doi: null
   - id: alt_skimming
     label: "Skimming / disengagement"
@@ -191,6 +198,10 @@ alternatives:
   - id: alt_retention
     label: "Selective retention"
     key_constructs: ["self-selected continued app use"]
+    source_doi: null
+  - id: alt_narration
+    label: "Narration pacing"
+    key_constructs: ["read-aloud narration", "listening rather than reading", "pacing source not logged"]
     source_doi: null
 
 formal_model:
@@ -207,3 +218,6 @@ provenance:
   - step: "3"
     action: "tf_predict"
     detail: "Derived the four pre-registered predictions H1a, H1b, H1c and H2, pointing them diagnostically at the narration-pacing, skimming and selective-retention alternatives."
+  - step: "4"
+    action: "tf_revise"
+    detail: "Removed the narration-pacing screen and the sensitivity exclusion built on it, and re-pointed H1a, H1b and H1c from the narration-pacing alternative to a constant-rate-pacing alternative, after confirming that the Let's Story logs do not record whether read-aloud narration was used. Narration pacing is retained as an alternative that no prediction is pointed at: it attenuates the H1 effects towards zero, leaving those tests conservative, and it is a confound of unknown sign for H2 if a child's use of narration changes as reading experience accumulates."
